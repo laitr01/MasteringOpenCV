@@ -2,6 +2,7 @@
 
 ## Table of Contents
 **Preface v**
+
 **Chapter 1: Applying Effects to Images 1**\
 **Chapter 2: Detecting Basic Features in Images 23**
 **Chapter 4: Drilling Deeper into Object Detection -- Using**\
