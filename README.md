@@ -22,3 +22,10 @@
 
 **Chapter 9: Developing a Document Scanning App**
 
+## Blog
+
+[[Opencv] - Tích Hợp Thư Viện OpenCV Native Vào Android Studio](https://trach-androiddev.blogspot.com/2019/01/opencv-tich-hop-thu-vien-opencv-native.html)
+
+[[Opencv] - Áp Dụng Hiệu Ứng Cho Hình Ảnh Phần 1](https://trach-androiddev.blogspot.com/2019/01/opencv-ap-dung-hieu-ung-cho-hinh-anh.html)
+
+[[Opencv] - Áp Dụng Hiệu Ứng Cho Hình Ảnh Phần 2( Linear Filter )](https://trach-androiddev.blogspot.com/2019/01/opencv-ap-dung-hieu-ung-cho-hinh-anh_19.html)
