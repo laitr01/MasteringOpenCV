@@ -1,5 +1,9 @@
 package com.trach.bestapplication.opencvseries
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log
@@ -7,17 +11,26 @@ import android.view.Menu
 import android.view.MenuItem
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import org.opencv.android.BaseLoaderCallback
 import org.opencv.android.LoaderCallbackInterface
 import org.opencv.android.OpenCVLoader
+import org.opencv.android.Utils
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
+import java.io.FileNotFoundException
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
-    val openCVCallback = object : BaseLoaderCallback(this){
+    private val PHOTO_PICKUP_RESULT = 1000
+
+    val openCVCallback = object : BaseLoaderCallback(this) {
 
         override fun onManagerConnected(status: Int) {
-            when(status){
+            when (status) {
                 LoaderCallbackInterface.SUCCESS -> {
                     //TODO: do you work when loading is successful
                     System.loadLibrary("native-lib")
@@ -34,11 +47,18 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         fab.setOnClickListener { view ->
-            salt()
+            pickAnImage()
         }
 
         // Example of a call to a native method
 
+    }
+
+    private fun pickAnImage() {
+        val pickupImageIntent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+        }
+        startActivityForResult(pickupImageIntent, PHOTO_PICKUP_RESULT)
     }
 
     override fun onResume() {
@@ -67,6 +87,40 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PHOTO_PICKUP_RESULT) {
+            if (resultCode == Activity.RESULT_OK) {
+                try {
+                    val imageUri = data?.data
+                    val imageStream = imageUri?.let { contentResolver.openInputStream(it) }
+                    imageStream?.let {
+                        BitmapFactory.decodeStream(it)?.run {
+                            processBlurImage(this)
+                            imageSrc.setImageBitmap(this)
+                        }
+                    }
+                } catch (ex: FileNotFoundException) {
+                    ex.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun processBlurImage(bitmap: Bitmap) {
+        //xử lý làm mờ bitmap ở đây
+        //đầu tiên chuyển đổi bitmap về dạng Mat 1 đối tượng của opencv
+        val src = Mat(bitmap.height, bitmap.width, CvType.CV_8UC4) //<- what is CvType
+
+        Utils.bitmapToMat(bitmap, src)
+
+        Imgproc.blur(src, src, Size(100.0, 100.0))
+        // ---> mat -> bitmap
+        val resultBitmap = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(src, resultBitmap)
+        imageResult.setImageBitmap(resultBitmap)
     }
 
     /**
