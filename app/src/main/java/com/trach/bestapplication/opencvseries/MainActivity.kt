@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -24,8 +25,15 @@ import java.io.FileNotFoundException
 
 class MainActivity : AppCompatActivity() {
 
+    enum class ActionMode{
+        MEAN_BLUR,
+        GAUSSIAN_BLUR,
+        MEDIAN_BLUR
+    }
+
     private val TAG = "MainActivity"
     private val PHOTO_PICKUP_RESULT = 1000
+    private var srcBitmap: Bitmap? = null
 
     val openCVCallback = object : BaseLoaderCallback(this) {
 
@@ -84,7 +92,18 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_mean_blur -> {
+                processBlurImage(ActionMode.MEAN_BLUR)
+                true
+            }
+            R.id.action_gaussian_blur -> {
+                processBlurImage(ActionMode.GAUSSIAN_BLUR)
+                true
+            }
+            R.id.action_median_blur -> {
+                processBlurImage(ActionMode.MEDIAN_BLUR)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -98,8 +117,8 @@ class MainActivity : AppCompatActivity() {
                     val imageStream = imageUri?.let { contentResolver.openInputStream(it) }
                     imageStream?.let {
                         BitmapFactory.decodeStream(it)?.run {
-                            processBlurImage(this)
                             imageSrc.setImageBitmap(this)
+                            srcBitmap = this
                         }
                     }
                 } catch (ex: FileNotFoundException) {
@@ -109,18 +128,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun processBlurImage(bitmap: Bitmap) {
-        //xử lý làm mờ bitmap ở đây
-        //đầu tiên chuyển đổi bitmap về dạng Mat 1 đối tượng của opencv
-        val src = Mat(bitmap.height, bitmap.width, CvType.CV_8UC4) //<- what is CvType
+    private fun processBlurImage(actionMode: ActionMode) {
 
-        Utils.bitmapToMat(bitmap, src)
+        srcBitmap?.let {
+            //xử lý làm mờ bitmap ở đây
+            //đầu tiên chuyển đổi bitmap về dạng Mat 1 đối tượng của opencv
+            val src = Mat(it.height, it.width, CvType.CV_8UC4) //<- what is CvType
 
-        Imgproc.blur(src, src, Size(100.0, 100.0))
-        // ---> mat -> bitmap
-        val resultBitmap = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(src, resultBitmap)
-        imageResult.setImageBitmap(resultBitmap)
+            Utils.bitmapToMat(it, src)
+
+            when(actionMode){
+                ActionMode.MEAN_BLUR -> Imgproc.blur(src, src, Size(100.0, 100.0))
+                ActionMode.GAUSSIAN_BLUR -> Imgproc.GaussianBlur(src, src, Size(3.0,3.0), 0.0)
+                ActionMode.MEDIAN_BLUR -> Imgproc.medianBlur(src, src, 3)
+            }
+
+            // ---> mat -> bitmap
+            val resultBitmap = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888)
+            Utils.matToBitmap(src, resultBitmap)
+            imageResult.setImageBitmap(resultBitmap)
+        }?:let {
+            Toast.makeText(baseContext, "Load image first!", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     /**

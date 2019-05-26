@@ -2,8 +2,15 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.trach.bestapplication.opencvseries.MainActivity">
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
+    <item android:id="@+id/action_mean_blur"
+          android:title="@string/action_mean_blur"
           android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_gaussian_blur"
+          android:title="@string/action_gaussian_blur"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_median_blur"
+          android:title="@string/action_median_blur"
           app:showAsAction="never"/>
 </menu>
